@@ -6,7 +6,6 @@
 library(dplyr)
 
 ##The files we'll be using.
-## The Features file has the column names in it, so we read it in first.
 FeatureFile <- ".\\UCI HAR Dataset\\features.txt"
 SubjectTestFile <- ".\\UCI HAR Dataset\\test\\subject_test.txt"
 XTestFile <- ".\\UCI HAR Dataset\\test\\X_test.txt"
@@ -16,6 +15,7 @@ XTrainFile <- ".\\UCI HAR Dataset\\train\\X_train.txt"
 YTrainFile <- ".\\UCI HAR Dataset\\train\\Y_train.txt"
 ActivityLabelFile <- ".\\UCI HAR Dataset\\activity_labels.txt"
 
+## The Features file has the column names in it, so we read it in first.
 Features <- read.table(FeatureFile, sep=" ")
 
 ##Ideally, we only want the mean() and std() columns.  Here we can create
@@ -24,7 +24,8 @@ Features <- read.table(FeatureFile, sep=" ")
 #Matching words
 toMatch <- c("mean","std")
 
-##Which columns match
+##Which columns match.  We use value=TRUE because I want to make these 
+## desciptive names.
 DataColsKeep <- grep(paste(toMatch,collapse="|"),Features[,2],ignore.case=TRUE)
 
 ##The DataColClass will make the columns we want numeric and not read the others.
@@ -34,6 +35,25 @@ DataColClass[DataColsKeep] <- "numeric"
 ## The other read tables will take a column of column names, so we
 ##convert the names into a character vector.
 DataCols <- as.character(Features[,2])
+
+##Make the names better. First replace the hyphens and parenthesis in the names.
+DataCols <- gsub("[()]|-","",DataCols,ignore.case=TRUE)
+
+##The t means three dimensional, f is frequency
+DataCols <- gsub("tBody","ThreeDimBody_",DataCols)
+DataCols <- gsub("tGravity","ThreeDimGravity_",DataCols)
+DataCols <- gsub("fBody","FrequencyBody_",DataCols)
+
+## Acc is acceleration, not accesory.
+DataCols <- gsub("Acc","_Acceleration_",DataCols)
+
+##And space out the X, Y, Z.  I know there is a better way to do this,
+##but I didn't have time to find it.
+DataCols <- gsub("X","_X",DataCols)
+DataCols <- gsub("Y","_Y",DataCols)
+DataCols <- gsub("Z","_Z",DataCols)
+
+## Make sure the final names are unique.
 DataCols <- make.names(DataCols,unique=TRUE)
 
 ##Read in the XTest with column names.  Put Subjects first and test type last.
@@ -58,7 +78,6 @@ ActLabels <- read.table(ActivityLabelFile,colClasses=c("integer","character"))
 
 ##We want to merge these with the "Activities" column of the All_Data df.
 ## Get rid of the numbers and keep the category.
-merge(All_Data,ActLabels,by.x="Activity",by.y="V1")
 Final <- merge(All_Data,ActLabels,by.x="Activity",by.y="V1")
 Final$Activity <- NULL
 names(Final)[names(Final)=="V2"] <- "Activity"
