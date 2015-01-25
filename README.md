@@ -1,3 +1,6 @@
+README Before getting started
+=============================
+
 The run_analysis.r file in the repo is designed to run one level above the "UCI HAR Dataset" folder.
 The script generates file names on that assumption and reads in the feature, data, and label files 
 from the dataset, beginning with the features.  For the features, which are eventually used as
